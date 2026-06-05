@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Istirahat - Lembur</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="icon.png">
+
+</head>
+
+<body>
+    <main class="main-menu">
+        <div class="menu-header">
+            <button id="backArrow" class="small-link back-arrow-overlay" type="button">←</button>
+            <p class="menu-intro">Pilihan Istirahat</p>
+            <h1 class="menu-title">Istirahat</h1>
+        </div>
+
+        <label for="namaSelect">Nama (Anda):</label>
+        <select id="namaSelect">
+            <option value="" disabled selected>Memuat nama...</option>
+        </select>
+
+        <div class="cards-wrapper"
+            style="display:flex; align-items:flex-start; gap:12px; margin-top:12px; position:relative;">
+            <div id="cardsContainer" class="cards">
+                <div class="card" id="regulerCard">
+                    <div class="menu-icon">⏱️</div>
+                    <h3>Lembur Reguler</h3>
+                    <p class="small">Mulai timer 2 jam. Akan memberi notifikasi saat melewati 2 jam.</p>
+                </div>
+                <div class="card" id="dadakanCard">
+                    <div class="menu-icon">⚡</div>
+                    <h3>Lembur Dadakan</h3>
+                    <p class="small">Menggantikan siapa? Pilih nama dan kirim.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="dadakanForm" class="hidden fade-section">
+            <label for="gantiSelect">Menggantikan siapa:</label>
+            <select id="gantiSelect">
+                <option value="" disabled selected>Pilih nama</option>
+            </select>
+            <div class="form-row">
+                <button id="submitDadakan" type="button">Kirim Lembur Dadakan</button>
+            </div>
+        </div>
+
+        <div id="regulerArea" class="timer-wrap hidden fade-section">
+            <div class="circle">
+                <div>
+                    <div class="big-time" id="elapsed">00:00:00</div>
+                    <div class="muted">Waktu berjalan</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <button id="stopAndRecord" type="button">Stop & Rekam Waktu</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const namaSelect = document.getElementById('namaSelect');
+        const gantiSelect = document.getElementById('gantiSelect');
+        const regulerCard = document.getElementById('regulerCard');
+        const dadakanCard = document.getElementById('dadakanCard');
+        const dadakanForm = document.getElementById('dadakanForm');
+        const submitDadakan = document.getElementById('submitDadakan');
+        const regulerArea = document.getElementById('regulerArea');
+        const elapsedEl = document.getElementById('elapsed');
+        const stopAndRecord = document.getElementById('stopAndRecord');
+        const menuTitle = document.querySelector('.menu-title');
+        const defaultTitle = 'Istirahat / Lembur';
+
+        function setHeaderTitle(text) {
+            if (menuTitle) menuTitle.textContent = text;
+        }
+
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwTutyXMaO9nWglVq2AkzfbsJJzqfaB5WvZgIm2xIUndgQTmKIzPbWRW3jEmi-tF4fZBw/exec';
+        const REGULER_STATE_KEY = 'istirahatRegulerState';
+        const LAST_ISTIRAHAT_DURATION_KEY = 'lastIstirahatDuration';
+
+        function saveRegulerState() {
+            if (!regulerStart || !namaSelect.value) return;
+            localStorage.setItem(REGULER_STATE_KEY, JSON.stringify({
+                active: true,
+                startTime: regulerStart,
+                name: namaSelect.value
+            }));
+        }
+
+        function clearRegulerState() {
+            localStorage.removeItem(REGULER_STATE_KEY);
+        }
+
+        function getSavedRegulerState() {
+            try {
+                return JSON.parse(localStorage.getItem(REGULER_STATE_KEY));
+            } catch (err) {
+                return null;
+            }
+        }
+
+        let pendingRestoreState = null;
+
+        function attemptRestoreRegulerState() {
+            const savedState = pendingRestoreState || getSavedRegulerState();
+            if (!savedState || !savedState.active || !savedState.startTime || !savedState.name) return;
+            if (Array.from(namaSelect.options).some(o => o.value === savedState.name)) {
+                namaSelect.value = savedState.name;
+                updateCardState();
+                setHeaderTitle('Lembur Reguler');
+                showSection(regulerArea, 'reguler');
+                setTimeout(() => startReguler(savedState.startTime), 350);
+                pendingRestoreState = null;
+            } else {
+                pendingRestoreState = savedState;
+            }
+        }
+
+        // load names same as index (store locally so dadakan is instant)
+        let namesList = [];
+        fetch(GAS_URL + '?namaList')
+            .then(r => r.json())
+            .then(list => {
+                namesList = list || [];
+                namaSelect.innerHTML = '<option value="" disabled selected>Pilih Nama</option>';
+                gantiSelect.innerHTML = '<option value="" disabled selected>Pilih nama</option>';
+                namesList.forEach(n => {
+                    const o1 = document.createElement('option'); o1.value = n; o1.textContent = n; namaSelect.appendChild(o1);
+                    const o2 = document.createElement('option'); o2.value = n; o2.textContent = n; gantiSelect.appendChild(o2);
+                });
+                updateCardState();
+                attemptRestoreRegulerState();
+            })
+            .catch(err => {
+                namaSelect.innerHTML = '<option value="" disabled selected>Tidak bisa ambil nama</option>';
+                gantiSelect.innerHTML = '<option value="" disabled selected>Tidak bisa ambil nama</option>';
+                console.error(err);
+            });
+
+        // enable/disable cards when user selects name
+        namaSelect.addEventListener('change', updateCardState);
+        document.addEventListener('DOMContentLoaded', updateCardState);
+
+        // Lembur Reguler
+        let regulerStart = null;
+        let regulerTimer = null;
+        const DURATION_MS = 2 * 60 * 60 * 1000; // 2 jam
+
+        function updateCardState() {
+            const disabled = !namaSelect.value;
+            [regulerCard, dadakanCard].forEach(c => {
+                if (disabled) c.classList.add('disabled'); else c.classList.remove('disabled');
+            });
+        }
+
+        function formatTime(ms) {
+            const s = Math.floor(ms / 1000);
+            const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+            const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+            const ss = String(s % 60).padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
+
+        function tickReguler() {
+            const now = Date.now();
+            const elapsed = now - regulerStart;
+            elapsedEl.textContent = formatTime(elapsed);
+        }
+
+        function startReguler(savedStart = null) {
+            if (!savedStart && !namaSelect.value) return alert('Pilih nama Anda dulu.');
+            regulerStart = savedStart || Date.now();
+            regulerArea.style.display = 'block';
+            if (!regulerTimer) {
+                regulerTimer = setInterval(tickReguler, 1000);
+                tickReguler();
+            }
+            namaSelect.disabled = true;
+            saveRegulerState();
+
+            if (!savedStart && "Notification" in window && Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+
+            const elapsed = Date.now() - regulerStart;
+            const timeoutMs = Math.max(DURATION_MS - elapsed, 0);
+            if (timeoutMs > 0) {
+                setTimeout(() => {
+                    if ("Notification" in window && Notification.permission === 'granted') {
+                        const notif = new Notification('Lembur: 2 jam terlewati', { body: 'Tekan untuk kembali dan rekam waktu.' });
+                        notif.onclick = () => window.focus();
+                    }
+                    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+                }, timeoutMs);
+            } else {
+                if ("Notification" in window && Notification.permission === 'granted') {
+                    const notif = new Notification('Lembur: 2 jam terlewati', { body: 'Tekan untuk kembali dan rekam waktu.' });
+                    notif.onclick = () => window.focus();
+                }
+                if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+            }
+        }
+
+        function stopRegulerAndSubmit() {
+            if (!regulerStart) return;
+            clearInterval(regulerTimer);
+            const duration = Date.now() - regulerStart;
+            regulerTimer = null;
+            regulerStart = null;
+            namaSelect.disabled = false;
+            clearRegulerState();
+            localStorage.setItem(LAST_ISTIRAHAT_DURATION_KEY, String(duration));
+            const payload = new FormData();
+            payload.append('type', 'Istirahat');
+            payload.append('subtype', 'Lembur Reguler');
+            payload.append('nama', namaSelect.value);
+            payload.append('duration_ms', String(duration));
+            fetch(GAS_URL, { method: 'POST', body: payload })
+                .then(r => r.text())
+                .then(() => {
+                    alert('✅ Lembur Reguler tercatat.');
+                    window.location.href = 'page2.html?status=Istirahat';
+                })
+                .catch(err => { alert('Gagal kirim.'); console.error(err); });
+        }
+
+        // helper to fade between sections
+        const cardsContainer = document.getElementById('cardsContainer');
+        let currentSection = 'cards';
+
+        function showSection(targetEl, sectionName) {
+            cardsContainer.classList.add('fade-out');
+            setTimeout(() => {
+                cardsContainer.classList.add('hidden');
+                cardsContainer.classList.remove('fade-out');
+            }, 250);
+            targetEl.classList.remove('fade-section');
+            targetEl.classList.remove('hidden');
+            targetEl.classList.add('fade-in');
+            setTimeout(() => targetEl.classList.remove('fade-in'), 350);
+            currentSection = sectionName;
+        }
+
+        function backToMenu() {
+            [dadakanForm, regulerArea].forEach(el => {
+                if (!el.classList.contains('hidden')) {
+                    el.classList.add('fade-out');
+                    setTimeout(() => {
+                        el.classList.add('hidden');
+                        el.classList.remove('fade-out');
+                        el.classList.add('fade-section');
+                    }, 250);
+                }
+            });
+            setHeaderTitle(defaultTitle);
+            cardsContainer.classList.remove('hidden');
+            cardsContainer.classList.add('fade-in');
+            setTimeout(() => cardsContainer.classList.remove('fade-in'), 350);
+            currentSection = 'cards';
+        }
+
+        regulerCard.addEventListener('click', () => {
+            if (!namaSelect.value) return alert('Pilih nama Anda dulu.');
+            setHeaderTitle('Lembur Reguler');
+            showSection(regulerArea, 'reguler');
+            setTimeout(() => startReguler(), 350);
+        });
+
+        stopAndRecord.addEventListener('click', () => {
+            stopRegulerAndSubmit();
+        });
+
+        const backArrow = document.getElementById('backArrow');
+        if (backArrow) backArrow.addEventListener('click', () => {
+            if (currentSection === 'cards') {
+                window.location.href = 'index.html';
+            } else {
+                backToMenu();
+            }
+        });
+
+        // Lembur Dadakan (use local namesList for instant UI)
+        dadakanCard.addEventListener('click', () => {
+            if (!namaSelect.value) return alert('Pilih nama Anda dulu.');
+            setHeaderTitle('Lembur Dadakan');
+            // populate gantiSelect excluding own name from namesList
+            Array.from(gantiSelect.options).forEach(o => o.remove());
+            const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.disabled = true; placeholder.selected = true; placeholder.textContent = 'Pilih nama'; gantiSelect.appendChild(placeholder);
+            namesList.forEach(n => { if (n !== namaSelect.value) { const o = document.createElement('option'); o.value = n; o.textContent = n; gantiSelect.appendChild(o); } });
+            showSection(dadakanForm, 'dadakan');
+        });
+
+        submitDadakan.addEventListener('click', () => {
+            if (!namaSelect.value) return alert('Pilih nama Anda.');
+            if (!gantiSelect.value) return alert('Pilih siapa yang digantikan.');
+            localStorage.removeItem(REGULER_STATE_KEY);
+            localStorage.setItem(LAST_ISTIRAHAT_DURATION_KEY, '0');
+            const payload = new FormData();
+            payload.append('type', 'Istirahat');
+            payload.append('subtype', 'Lembur Dadakan');
+            payload.append('nama', namaSelect.value);
+            payload.append('menggantikan', gantiSelect.value);
+            payload.append('duration_ms', '0');
+            fetch(GAS_URL, { method: 'POST', body: payload })
+                .then(r => r.text())
+                .then(() => {
+                    alert('✅ Lembur Dadakan tercatat.');
+                    window.location.href = 'page2.html?status=Istirahat';
+                })
+                .catch(err => { alert('Gagal kirim.'); console.error(err); });
+        });
+
+    </script>
+</body>
+
+</html>
