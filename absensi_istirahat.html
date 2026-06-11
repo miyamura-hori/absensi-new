@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Istirahat</title>
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --maroon: #6B1A1A;
+      --maroon-dark: #4A1010;
+      --maroon-light: #8B2C2C;
+      --maroon-pale: #F9EDED;
+      --gold: #C8922A;
+      --gold-light: #F0D080;
+      --gray-100: #F7F3F3;
+      --gray-200: #EDE6E6;
+      --gray-500: #9A8A8A;
+      --gray-700: #4A3A3A;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+    }
+
+    /* center the card on the page */
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #fff8f7;
+      padding: 20px;
+    }
+
+    #app {
+      font-family: var(--font-sans, system-ui, sans-serif);
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .header {
+      background: var(--maroon);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 1.1rem 1.4rem 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(200, 146, 42, 0.18);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--gold);
+      color: var(--gold-light);
+      font-size: 20px;
+    }
+
+    .header-title {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .header-sub {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .card {
+      background: var(--color-background-primary, #fff);
+      border: 0.5px solid rgba(139, 44, 44, 0.25);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 1.4rem;
+      width: 100%;
+      max-width: 720px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+    }
+
+    /* fade-in animation similar to index.html */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 320ms ease both;
+    }
+
+    .sec-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--maroon);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      margin-top: 1.2rem;
+    }
+
+    .sec-label:first-child {
+      margin-top: 0;
+    }
+
+    .field-label {
+      font-size: 13px;
+      color: var(--gray-700);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--gray-700);
+      background: var(--gray-100);
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--maroon-light);
+      background: #fff;
+    }
+
+    .divider {
+      height: 0.5px;
+      background: var(--gray-200);
+      margin: 1rem 0;
+    }
+
+    .lembur-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .lembur-card {
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .lembur-card:hover {
+      border-color: var(--maroon-light);
+      background: var(--maroon-pale);
+    }
+
+    .lembur-card.selected {
+      border-color: var(--maroon);
+      background: var(--maroon-pale);
+    }
+
+    .lembur-card i {
+      font-size: 22px;
+      color: var(--maroon-light);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .lembur-card.selected i {
+      color: var(--maroon);
+    }
+
+    .lembur-card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+
+    .lembur-card.selected .lembur-card-title {
+      color: var(--maroon-dark);
+    }
+
+    .lembur-card-desc {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    .camera-box {
+      border: 2px dashed var(--gray-200);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      position: relative;
+      background: #1a0808;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .camera-box video {
+      width: 100%;
+      display: block;
+      border-radius: var(--radius-md);
+      transform: scaleX(-1);
+    }
+
+    .camera-box canvas {
+      display: none;
+    }
+
+    .camera-placeholder {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray-500);
+    }
+
+    .camera-placeholder i {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 8px;
+      color: var(--maroon-light);
+    }
+
+    .camera-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .captured-wrap {
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .captured-wrap img {
+      width: 100%;
+      border-radius: var(--radius-md);
+      display: block;
+      border: 2px solid var(--maroon-light);
+    }
+
+    .captured-badge {
+      background: var(--maroon);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+      width: 100%;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--maroon);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+    }
+
+    .btn-secondary {
+      background: var(--gray-200);
+      color: var(--gray-700);
+    }
+
+    .btn-cam {
+      background: var(--maroon-pale);
+      color: var(--maroon);
+      border: 1.5px solid var(--maroon-light);
+    }
+
+    .btn-return {
+      background: #1D6A3A;
+      color: #E1F5EE;
+    }
+
+    .btn-return:hover {
+      opacity: 0.88;
+    }
+
+    .timer-display {
+      background: var(--maroon);
+      border-radius: var(--radius-lg);
+      padding: 1.4rem;
+      text-align: center;
+      color: #fff;
+      margin-bottom: 1.25rem;
+    }
+
+    .timer-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 6px;
+    }
+
+    .timer-clock {
+      font-size: 50px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      color: var(--gold-light);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .timer-clock.overtime {
+      color: #F09595;
+    }
+
+    .timer-status {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 8px;
+    }
+
+    .timer-bar-wrap {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 99px;
+      height: 5px;
+      margin-top: 12px;
+    }
+
+    .timer-bar {
+      height: 5px;
+      border-radius: 99px;
+      background: var(--gold);
+      transition: width 1s linear;
+    }
+
+    .info-card {
+      background: var(--gray-100);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .info-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2.5px solid var(--maroon-light);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-200);
+      font-size: 22px;
+      color: var(--maroon-light);
+    }
+
+    .info-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .info-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--maroon-dark);
+    }
+
+    .info-detail {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .badge-maroon {
+      background: var(--maroon);
+      color: #fff;
+    }
+
+    .badge-gold {
+      background: var(--gold);
+      color: #fff;
+    }
+
+    .alert-late {
+      background: #FCEBEB;
+      border: 1.5px solid #E24B4A;
+      border-radius: var(--radius-md);
+      padding: 11px 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .alert-late i {
+      font-size: 18px;
+      color: #A32D2D;
+      flex-shrink: 0;
+    }
+
+    .alert-text {
+      font-size: 13px;
+      color: #791F1F;
+      font-weight: 500;
+    }
+
+    .notif-banner {
+      background: #EAF3DE;
+      border: 1.5px solid #639922;
+      border-radius: var(--radius-md);
+      padding: 10px 13px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 1rem;
+    }
+
+    .notif-banner i {
+      font-size: 17px;
+      color: #3B6D11;
+      flex-shrink: 0;
+    }
+
+    .notif-text {
+      font-size: 12px;
+      color: #27500A;
+    }
+
+    .notif-blocked {
+      background: #FAEEDA;
+      border: 1.5px solid #BA7517;
+      border-radius: var(--radius-md);
+      padding: 10px 13px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 1rem;
+    }
+
+    .notif-blocked i {
+      font-size: 17px;
+      color: #854F0B;
+      flex-shrink: 0;
+    }
+
+    .notif-blocked-text {
+      font-size: 12px;
+      color: #633806;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      font-size: 13px;
+      border-bottom: 0.5px solid var(--gray-200);
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-key {
+      color: var(--gray-500);
+    }
+
+    .summary-val {
+      color: var(--gray-700);
+      font-weight: 500;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 1.1rem;
+    }
+
+    .err {
+      font-size: 12px;
+      color: #A32D2D;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* selection-summary (copy of index.css) */
+    .selection-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff4f4;
+      border: 1px solid #f1d4d4;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      color: #6b1f1f;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .selection-summary button,
+    .change-selection {
+      border: none;
+      background: var(--maroon);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="page active" id="page-form">
+
+      <span>Pilihan: <strong id="selectedAbsensiName"></strong></span>
+      <button type="button" class="change-selection">Ubah pilihan</button>
+
+      <div class="header">
+        <div class="header-icon"><i class="ti ti-coffee" aria-hidden="true"></i></div>
+        <div>
+          <div class="header-title">Absensi Istirahat</div>
+          <div class="header-sub">Isi data, ambil foto, lalu mulai istirahat</div>
+        </div>
+
+      </div>
+      
+      <div class="card">
+        <div class="sec-label"><i class="ti ti-user" aria-hidden="true"
+            style="font-size:12px;margin-right:4px;"></i>Identitas</div>
+        <div style="margin-bottom:1rem;">
+          <div class="field-label">Nama Lengkap</div>
+          <select id="inp-nama">
+            <option value="" disabled selected>Memuat nama...</option>
+          </select>
+        </div>
+
+        <div class="sec-label"><i class="ti ti-camera" aria-hidden="true"
+            style="font-size:12px;margin-right:4px;"></i>Foto diri (wajib, ambil secara langsung)</div>
+
+        <div id="cam-section">
+          <div class="camera-box" id="camera-box">
+            <div class="camera-placeholder" id="cam-placeholder">
+              <i class="ti ti-camera-off" aria-hidden="true"></i>
+              <div style="font-size:13px;">Kamera belum aktif</div>
+              <div style="font-size:12px; margin-top:4px; color:var(--gray-500);">Klik tombol di bawah untuk membuka
+                kamera</div>
+            </div>
+            <video id="cam-video" autoplay playsinline style="display:none;"></video>
+            <canvas id="cam-canvas"></canvas>
+          </div>
+          <div class="camera-controls">
+            <button class="btn btn-cam" id="btn-open-cam" onclick="openCamera()" style="flex:1;">
+              <i class="ti ti-camera" aria-hidden="true"></i> Buka Kamera
+            </button>
+            <button class="btn btn-primary" id="btn-capture" onclick="capturePhoto()" style="flex:1; display:none;">
+              <i class="ti ti-camera" aria-hidden="true"></i> Ambil Foto
+            </button>
+          </div>
+        </div>
+
+        <div id="captured-section" style="display:none; margin-top:8px;">
+          <div class="captured-wrap">
+            <img id="captured-img" src="" alt="Foto kamu" />
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+            <span class="captured-badge"><i class="ti ti-check" style="font-size:12px;" aria-hidden="true"></i> Foto
+              berhasil diambil</span>
+            <button class="btn btn-cam" onclick="retakePhoto()" style="width:auto; padding:5px 12px; font-size:12px;">
+              <i class="ti ti-refresh" aria-hidden="true"></i> Ulangi
+            </button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sec-label"><i class="ti ti-clock-bolt" aria-hidden="true"
+            style="font-size:12px;margin-right:4px;"></i>Jenis lembur</div>
+        <div class="lembur-options">
+          <div class="lembur-card" id="btn-reguler" onclick="pilihLembur('reguler')">
+            <i class="ti ti-calendar-check" aria-hidden="true"></i>
+            <div class="lembur-card-title">Lembur Reguler</div>
+            <div class="lembur-card-desc">Sudah terjadwal</div>
+          </div>
+          <div class="lembur-card" id="btn-dadakan" onclick="pilihLembur('dadakan')">
+            <i class="ti ti-bolt" aria-hidden="true"></i>
+            <div class="lembur-card-title">Lembur Dadakan</div>
+            <div class="lembur-card-desc">Tidak terjadwal</div>
+          </div>
+        </div>
+
+        <div id="replace-section" style="display:none;">
+          <div class="divider"></div>
+          <div class="sec-label"><i class="ti ti-users" aria-hidden="true"
+              style="font-size:12px;margin-right:4px;"></i>Menggantikan siapa?</div>
+          <select id="inp-ganti">
+            <option value="" disabled selected>Pilih nama</option>
+          </select>
+        </div>
+
+        <div style="margin-top:1.4rem;">
+          <button class="btn btn-primary" onclick="submitForm()">
+            <i class="ti ti-send" aria-hidden="true"></i> Mulai Istirahat
+          </button>
+          <div class="err" id="err-msg" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-timer">
+      <div class="header">
+        <div class="header-icon"><i class="ti ti-hourglass" aria-hidden="true"></i></div>
+        <div>
+          <div class="header-title">Sedang Istirahat</div>
+          <div class="header-sub">Kamu harus kembali dalam 2 jam</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="info-card">
+          <div class="info-avatar" id="disp-avatar"><i class="ti ti-user" aria-hidden="true"></i></div>
+          <div style="flex:1; min-width:0;">
+            <div class="info-name" id="disp-nama">—</div>
+            <div class="info-detail" id="disp-detail">—</div>
+            <div style="margin-top:6px;" id="disp-badges"></div>
+          </div>
+        </div>
+
+        <div id="notif-ok" class="notif-banner" style="display:none;">
+          <i class="ti ti-bell" aria-hidden="true"></i>
+          <div class="notif-text">Notifikasi aktif — kamu akan diingatkan saat waktu hampir habis dan saat batas waktu
+            tiba.</div>
+        </div>
+        <div id="notif-blocked" class="notif-blocked" style="display:none;">
+          <i class="ti ti-bell-off" aria-hidden="true"></i>
+          <div class="notif-blocked-text">Notifikasi diblokir browser. Izinkan notifikasi di pengaturan browser agar
+            bisa
+            mendapat pengingat.</div>
+        </div>
+
+        <div id="alert-late" class="alert-late" style="display:none;">
+          <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+          <div class="alert-text">Waktu istirahat telah habis! Segera kembali ke tempat kerja.</div>
+        </div>
+
+        <div class="timer-display">
+          <div class="timer-label">Sisa waktu istirahat</div>
+          <div class="timer-clock" id="timer-clock">02:00:00</div>
+          <div class="timer-status" id="timer-status">Waktu berjalan...</div>
+          <div class="timer-bar-wrap">
+            <div class="timer-bar" id="timer-bar" style="width:100%;"></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sec-label">Ringkasan</div>
+        <div id="summary-rows"></div>
+        <div class="btn-grid">
+          <button class="btn btn-return" onclick="kembali()">
+            <i class="ti ti-check" aria-hidden="true"></i> Saya Sudah Kembali
+          </button>
+          <button class="btn btn-secondary" onclick="resetApp()" style="font-size:12px;">
+            <i class="ti ti-arrow-left" aria-hidden="true"></i> Reset / Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-done">
+      <div class="header">
+        <div class="header-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+        <div>
+          <div class="header-title">Absensi selesai</div>
+          <div class="header-sub">Terima kasih, selamat melanjutkan kerja!</div>
+        </div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:48px; margin:0.4rem 0;">
+          <i class="ti ti-mood-smile" aria-hidden="true" style="color:var(--maroon);"></i>
+        </div>
+        <div style="font-size:15px; font-weight:500; color:var(--maroon-dark); margin-bottom:5px;" id="done-nama">
+          Selamat
+          kembali!</div>
+        <div style="font-size:13px; color:var(--gray-500); margin-bottom:1.2rem;" id="done-detail">—</div>
+        <div
+          style="background:var(--gray-100); border-radius:var(--radius-md); padding:1rem; margin-bottom:1.4rem; text-align:left;"
+          id="done-summary"></div>
+        <button class="btn btn-primary" onclick="resetApp()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Absen Baru
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORE_KEY = 'absensi_sesi_v1';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwTutyXMaO9nWglVq2AkzfbsJJzqfaB5WvZgIm2xIUndgQTmKIzPbWRW3jEmi-tF4fZBw/exec';
+    const TOTAL_SEC = 7200;
+
+    let st = { nama: '', foto: null, lembur: '', ganti: '', mulai: null, timerInterval: null, notifGranted: false, warned30: false, warnedDone: false };
+    let stream = null;
+
+    function saveSession() {
+      if (!st.mulai) return;
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify({
+          nama: st.nama, foto: st.foto, lembur: st.lembur, ganti: st.ganti,
+          mulai: st.mulai.getTime(), warned30: st.warned30, warnedDone: st.warnedDone
+        }));
+      } catch (e) { }
+    }
+
+    function loadSession() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return false;
+        const d = JSON.parse(raw);
+        const elapsed = Math.floor((Date.now() - d.mulai) / 1000);
+        if (elapsed >= TOTAL_SEC + 3600) { localStorage.removeItem(STORE_KEY); return false; }
+        st.nama = d.nama; st.foto = d.foto; st.lembur = d.lembur; st.ganti = d.ganti;
+        st.mulai = new Date(d.mulai); st.warned30 = d.warned30 || false; st.warnedDone = d.warnedDone || false;
+        return true;
+      } catch (e) { return false; }
+    }
+
+    function clearSession() {
+      try { localStorage.removeItem(STORE_KEY); } catch (e) { }
+    }
+
+    async function requestNotif() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'granted') { st.notifGranted = true; return; }
+      if (Notification.permission !== 'denied') {
+        const p = await Notification.requestPermission();
+        st.notifGranted = p === 'granted';
+      }
+      updateNotifBanner();
+    }
+
+    function sendNotif(title, body) {
+      if (!st.notifGranted) return;
+      try { new Notification(title, { body, icon: '' }); } catch (e) { }
+    }
+
+    function updateNotifBanner() {
+      if (!('Notification' in window)) return;
+      document.getElementById('notif-ok').style.display = st.notifGranted ? 'flex' : 'none';
+      document.getElementById('notif-blocked').style.display = (!st.notifGranted && Notification.permission === 'denied') ? 'flex' : 'none';
+    }
+
+    async function openCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        const video = document.getElementById('cam-video');
+        video.srcObject = stream;
+        video.style.display = 'block';
+        document.getElementById('cam-placeholder').style.display = 'none';
+        document.getElementById('btn-open-cam').style.display = 'none';
+        document.getElementById('btn-capture').style.display = 'flex';
+      } catch (e) {
+        showErr('Kamera tidak bisa dibuka. Pastikan izin kamera sudah diberikan.');
+      }
+    }
+
+    // --- NAMA LIST (dari Google Sheets via GAS) ---
+    async function fetchNames() {
+      try {
+        const res = await fetch(GAS_URL + '?namaList');
+        const list = await res.json();
+        populateNames(Array.isArray(list) ? list : []);
+      } catch (e) {
+        console.error('Gagal ambil nama:', e);
+        const sel = document.getElementById('inp-nama');
+        if (sel) sel.innerHTML = '<option value="" disabled selected>Tidak bisa ambil nama</option>';
+      }
+    }
+
+    function populateNames(list) {
+      const sel = document.getElementById('inp-nama');
+      const ganti = document.getElementById('inp-ganti');
+      if (!sel || !ganti) return;
+      sel.innerHTML = '<option value="" disabled selected>Pilih nama</option>';
+      ganti.innerHTML = '<option value="" disabled selected>Pilih nama</option>';
+      list.forEach(n => {
+        const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
+        const o2 = document.createElement('option'); o2.value = n; o2.textContent = n; ganti.appendChild(o2);
+      });
+      // restore selection if session exists
+      if (st && st.nama) {
+        Array.from(sel.options).forEach(o => { if (o.value === st.nama) o.selected = true; });
+        updateGantiOptions();
+      }
+      sel.addEventListener('change', function () { updateGantiOptions(); st.nama = this.value; updateSelectionSummary(); });
+    }
+
+    function updateGantiOptions() {
+      const sel = document.getElementById('inp-nama');
+      const ganti = document.getElementById('inp-ganti');
+      if (!sel || !ganti) return;
+      const chosen = sel.value;
+      const names = Array.from(sel.options).map(o => o.value).filter(v => v && v !== chosen);
+      ganti.innerHTML = '<option value="" disabled selected>Pilih nama</option>';
+      names.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; ganti.appendChild(o); });
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('cam-video');
+      const canvas = document.getElementById('cam-canvas');
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      const ctx = canvas.getContext('2d');
+      ctx.save(); ctx.scale(-1, 1); ctx.drawImage(video, -canvas.width, 0); ctx.restore();
+      st.foto = canvas.toDataURL('image/jpeg', 0.8);
+      stopCamera();
+      document.getElementById('captured-img').src = st.foto;
+      document.getElementById('cam-section').style.display = 'none';
+      document.getElementById('captured-section').style.display = 'block';
+      updateSelectionSummary();
+    }
+
+    function retakePhoto() {
+      st.foto = null;
+      document.getElementById('captured-section').style.display = 'none';
+      document.getElementById('cam-section').style.display = 'block';
+      document.getElementById('cam-video').style.display = 'none';
+      document.getElementById('cam-placeholder').style.display = 'block';
+      document.getElementById('btn-open-cam').style.display = 'flex';
+      document.getElementById('btn-capture').style.display = 'none';
+      openCamera();
+      updateSelectionSummary();
+    }
+
+    function stopCamera() {
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+      const video = document.getElementById('cam-video');
+      video.srcObject = null; video.style.display = 'none';
+      document.getElementById('cam-placeholder').style.display = 'none';
+      document.getElementById('btn-open-cam').style.display = 'none';
+      document.getElementById('btn-capture').style.display = 'none';
+    }
+
+    function updateSelectionSummary() {
+      const wrap = document.getElementById('selection-summary');
+      const chosen = document.getElementById('selectedChoice');
+      if (!wrap || !chosen) return;
+      const parts = [];
+      if (st.nama) parts.push(st.nama);
+      if (st.lembur) parts.push(st.lembur === 'reguler' ? 'Lembur Reguler' : 'Lembur Dadakan');
+      if (st.lembur === 'dadakan' && st.ganti) parts.push('Ganti: ' + st.ganti);
+      chosen.textContent = parts.length ? parts.join(' · ') : '—';
+      wrap.style.display = parts.length ? 'flex' : 'none';
+    }
+
+    function pilihLembur(type) {
+      st.lembur = type;
+      document.querySelectorAll('.lembur-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('btn-' + type).classList.add('selected');
+      document.getElementById('replace-section').style.display = type === 'dadakan' ? 'block' : 'none';
+      updateSelectionSummary();
+    }
+
+    function showErr(msg) {
+      const el = document.getElementById('err-msg');
+      el.textContent = msg; el.style.display = msg ? 'block' : 'none';
+    }
+
+    async function kirimAbsensi(absensi) {
+
+      const formData = new FormData();
+
+      formData.append('action', 'istirahat');
+
+      formData.append(
+        'nama',
+        st.nama
+      );
+
+      formData.append(
+        'shift',
+        st.lembur === 'reguler'
+          ? 'Lembur Reguler'
+          : 'Lembur Dadakan'
+      );
+
+      formData.append(
+        'namaOD',
+        st.ganti || '-'
+      );
+
+      formData.append(
+        'absensi',
+        absensi
+      );
+
+      formData.append(
+        'foto',
+        st.foto
+      );
+
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return response.text();
+    }
+
+    async function submitForm() {
+      st.nama = document.getElementById('inp-nama').value.trim();
+      if (!st.nama) { showErr('Nama tidak boleh kosong.'); return; }
+      if (!st.foto) { showErr('Foto wajib diambil terlebih dahulu.'); return; }
+      if (!st.lembur) { showErr('Pilih jenis lembur terlebih dahulu.'); return; }
+      if (st.lembur === 'dadakan') {
+        st.ganti = document.getElementById('inp-ganti').value;
+        if (!st.ganti) { showErr('Pilih karyawan yang digantikan.'); return; }
+      }
+      showErr('');
+      await kirimAbsensi(
+        "Pulang untuk Istirahat"
+      );
+      stopCamera();
+      st.mulai = new Date();
+      st.warned30 = false; st.warnedDone = false;
+      saveSession();
+      await requestNotif();
+      showTimerPage();
+
+    }
+
+    function showTimerPage() {
+      showPage('page-timer');
+      const av = document.getElementById('disp-avatar');
+      av.innerHTML = st.foto ? '<img src="' + st.foto + '" alt="Foto" />' : '<i class="ti ti-user" aria-hidden="true"></i>';
+      document.getElementById('disp-nama').textContent = st.nama;
+      const batas = new Date(st.mulai.getTime() + TOTAL_SEC * 1000);
+      document.getElementById('disp-detail').textContent = 'Mulai: ' + fmt(st.mulai) + ' · Batas: ' + fmt(batas);
+      let b = '<span class="badge badge-maroon">' + (st.lembur === 'reguler' ? 'Lembur Reguler' : 'Lembur Dadakan') + '</span>';
+      if (st.lembur === 'dadakan') b += ' <span class="badge badge-gold" style="margin-left:4px;">Ganti: ' + st.ganti + '</span>';
+      document.getElementById('disp-badges').innerHTML = b;
+      updateNotifBanner();
+      buildSummary();
+      startTimer();
+    }
+
+    function buildSummary() {
+      const batas = new Date(st.mulai.getTime() + TOTAL_SEC * 1000);
+      const rows = [
+        ['Nama', st.nama],
+        ['Jenis Lembur', st.lembur === 'reguler' ? 'Lembur Reguler' : 'Lembur Dadakan'],
+        ...(st.lembur === 'dadakan' ? [['Menggantikan', st.ganti]] : []),
+        ['Mulai Istirahat', fmt(st.mulai)],
+        ['Batas Kembali', fmt(batas)],
+      ];
+      document.getElementById('summary-rows').innerHTML =
+        rows.map(([k, v]) => `<div class="summary-row"><span class="summary-key">${k}</span><span class="summary-val">${v}</span></div>`).join('');
+    }
+
+    function startTimer() {
+      if (st.timerInterval) clearInterval(st.timerInterval);
+      tick();
+      st.timerInterval = setInterval(tick, 1000);
+    }
+
+    function tick() {
+      const elapsed = Math.floor((Date.now() - st.mulai.getTime()) / 1000);
+      const remaining = Math.max(0, TOTAL_SEC - elapsed);
+      const pct = Math.round((remaining / TOTAL_SEC) * 100);
+
+      const h = Math.floor(remaining / 3600);
+      const m = Math.floor((remaining % 3600) / 60);
+      const s = remaining % 60;
+      const clockStr = pad(h) + ':' + pad(m) + ':' + pad(s);
+      document.getElementById('timer-clock').textContent = clockStr;
+      document.getElementById('timer-bar').style.width = pct + '%';
+
+      const clockEl = document.getElementById('timer-clock');
+      const barEl = document.getElementById('timer-bar');
+      const statusEl = document.getElementById('timer-status');
+
+      if (remaining <= 0) {
+        clockEl.textContent = '+' + pad(Math.floor((-remaining < 0 ? 0 : -remaining) / 3600)) + ':' + pad(Math.floor((Math.abs(elapsed - TOTAL_SEC) % 3600) / 60)) + ':' + pad(Math.abs(elapsed - TOTAL_SEC) % 60);
+        const ov = elapsed - TOTAL_SEC;
+        clockEl.textContent = 'LEWAT ' + pad(Math.floor(ov / 3600)) + ':' + pad(Math.floor((ov % 3600) / 60)) + ':' + pad(ov % 60);
+        clockEl.classList.add('overtime');
+        barEl.style.width = '0%';
+        barEl.style.background = '#E24B4A';
+        statusEl.textContent = 'Waktu habis! Segera kembali.';
+        document.getElementById('alert-late').style.display = 'flex';
+        if (!st.warnedDone) {
+          st.warnedDone = true; saveSession();
+          sendNotif('Waktu Istirahat Habis!', st.nama + ', waktu istirahatmu sudah habis. Segera kembali bekerja!');
+        }
+      } else if (remaining <= 1800) {
+        barEl.style.background = '#E24B4A';
+        statusEl.textContent = 'Kurang dari 30 menit tersisa!';
+        if (!st.warned30) {
+          st.warned30 = true; saveSession();
+          sendNotif('Sisa 30 Menit Istirahat', st.nama + ', waktu istirahatmu tersisa ' + Math.ceil(remaining / 60) + ' menit lagi.');
+        }
+      } else if (remaining <= 3600) {
+        barEl.style.background = '#EF9F27';
+        statusEl.textContent = 'Kurang dari 1 jam tersisa.';
+      } else {
+        barEl.style.background = '#C8922A';
+        statusEl.textContent = 'Waktu berjalan...';
+      }
+    }
+
+    async function kembali() {
+      await kirimAbsensi(
+        "Masuk Selesai Istirahat"
+      );
+      if (st.timerInterval) clearInterval(st.timerInterval);
+      const selesai = new Date();
+      const dur = Math.floor((selesai - st.mulai) / 60000);
+      const late = dur > 120;
+      clearSession();
+      showPage('page-done');
+      document.getElementById('done-nama').textContent = 'Selamat kembali, ' + st.nama + '!';
+      document.getElementById('done-detail').textContent = 'Durasi: ' + dur + ' menit · ' + (late ? 'Terlambat kembali' : 'Tepat waktu');
+      const batas = new Date(st.mulai.getTime() + TOTAL_SEC * 1000);
+      const rows = [
+        ['Nama', st.nama], ['Jenis Lembur', st.lembur === 'reguler' ? 'Lembur Reguler' : 'Lembur Dadakan'],
+        ...(st.lembur === 'dadakan' ? [['Menggantikan', st.ganti]] : []),
+        ['Mulai Istirahat', fmt(st.mulai)], ['Batas Kembali', fmt(batas)],
+        ['Kembali Pada', fmt(selesai)], ['Durasi', dur + ' menit'], ['Status', late ? 'Terlambat' : 'Tepat waktu'],
+      ];
+      document.getElementById('done-summary').innerHTML =
+        rows.map(([k, v]) => `<div class="summary-row"><span class="summary-key">${k}</span><span class="summary-val">${v}</span></div>`).join('');
+    }
+
+    function resetApp() {
+      if (st.timerInterval) clearInterval(st.timerInterval);
+      stopCamera();
+      clearSession();
+      st = { nama: '', foto: null, lembur: '', ganti: '', mulai: null, timerInterval: null, notifGranted: false, warned30: false, warnedDone: false };
+      document.getElementById('inp-nama').value = '';
+      document.getElementById('inp-ganti').value = '';
+      document.getElementById('captured-section').style.display = 'none';
+      document.getElementById('cam-section').style.display = 'block';
+      document.getElementById('cam-video').style.display = 'none';
+      document.getElementById('cam-placeholder').style.display = 'block';
+      document.getElementById('btn-open-cam').style.display = 'flex';
+      document.getElementById('btn-capture').style.display = 'none';
+      document.querySelectorAll('.lembur-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('replace-section').style.display = 'none';
+      document.getElementById('alert-late').style.display = 'none';
+      document.getElementById('timer-clock').classList.remove('overtime');
+      showErr('');
+      showPage('page-form');
+    }
+
+    // wire all "Ubah pilihan" buttons (there may be multiple) to go back to index.html
+    document.querySelectorAll('.change-selection').forEach(btn => {
+      btn.addEventListener('click', () => { window.location.href = 'index.html'; });
+    });
+
+    // wire change-selection button: return to main menu (index.html)
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('btn-change-selection');
+      if (btn) btn.addEventListener('click', () => { window.location.href = 'index.html'; });
+      const selAbs = document.getElementById('selectedAbsensiName');
+      if (selAbs) selAbs.textContent = 'Istirahat';
+      // animate initial form card on first load
+      const initialCard = document.querySelector('#page-form .card');
+      if (initialCard) {
+        initialCard.classList.add('fade-in');
+        initialCard.addEventListener('animationend', () => initialCard.classList.remove('fade-in'), { once: true });
+      }
+    });
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const page = document.getElementById(id);
+      page.classList.add('active');
+      // add fade-in animation to page card
+      const card = page.querySelector('.card');
+      if (card) {
+        card.classList.remove('fade-in');
+        void card.offsetWidth;
+        card.classList.add('fade-in');
+        card.addEventListener('animationend', () => card.classList.remove('fade-in'), { once: true });
+      }
+    }
+
+    function fmt(d) { return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    (async function init() {
+      await fetchNames();
+      updateSelectionSummary();
+      if (loadSession()) {
+        if (Notification.permission === 'granted') st.notifGranted = true;
+        // restore selected name in select
+        if (st.nama) {
+          const sel = document.getElementById('inp-nama');
+          if (sel) Array.from(sel.options).forEach(o => { if (o.value === st.nama) o.selected = true; });
+          updateGantiOptions();
+        }
+        showTimerPage();
+      }
+    })();
+  </script>
+</body>
+
+</html>
